@@ -19,7 +19,6 @@ namespace CreateDefaultHostBuilderExample.Extensions
 		/// an <see cref="IConfiguration"/> parameter. The implementation should contain a public
 		/// method named ConfigureServices with <see cref="IServiceCollection"/> parameter.</typeparam>
 		/// <param name="hostBuilder">The <see cref="IHostBuilder"/> to initialize with TStartup.</param>
-		/// <param name="args">The command line args.</param>
 		/// <exception cref="InvalidOperationException">Thrown when TStartup doesn't implement
 		/// ConfigureServices(IServiceCollection)"/></exception>
 		/// <returns>The same instance of the <see cref="IHostBuilder"/> for chaining.</returns>
@@ -31,10 +30,11 @@ namespace CreateDefaultHostBuilderExample.Extensions
 				new Type[] { typeof(IServiceCollection) });
 
 			// Check if TStartup has a ctor that takes a IConfiguration parameter
-			var hasConfigCtor = typeof(TStartup).GetConstructor(new Type[] { typeof(IConfiguration) }) != null;
+			var hasConfigCtor = typeof(TStartup).GetConstructor(
+				new Type[]{ typeof(IConfiguration) }) != null;
 
-			// This may be kludgy, but I don't know how else to get the configuration built
-			// in time to pass to the TStartup ctor. This seems to do it perfectly.
+			// I don't know how else to get the configuration built in time to pass
+			// to the TStartup ctor. This seems to do it perfectly, though
 			IConfiguration configuration = null;
 			hostBuilder.ConfigureAppConfiguration(x => configuration = x.Build());
 
