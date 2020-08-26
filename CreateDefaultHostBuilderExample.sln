@@ -1,0 +1,25 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30413.136
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "CreateDefaultHostBuilderExample", "CreateDefaultHostBuilderExample\CreateDefaultHostBuilderExample.csproj", "{4B956A26-5789-4B4B-ABE3-9EE989A4E84D}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{4B956A26-5789-4B4B-ABE3-9EE989A4E84D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{4B956A26-5789-4B4B-ABE3-9EE989A4E84D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{4B956A26-5789-4B4B-ABE3-9EE989A4E84D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{4B956A26-5789-4B4B-ABE3-9EE989A4E84D}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4AFA4E96-80AF-41E8-A8BC-E56F6B17763D}
+	EndGlobalSection
+EndGlobal
