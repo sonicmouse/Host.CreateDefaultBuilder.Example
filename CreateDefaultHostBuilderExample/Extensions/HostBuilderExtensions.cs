@@ -2,7 +2,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
-using System.IO;
 
 namespace CreateDefaultHostBuilderExample.Extensions
 {
@@ -11,75 +10,55 @@ namespace CreateDefaultHostBuilderExample.Extensions
 	/// </summary>
 	public static class HostBuilderExtensions
 	{
-		/// <summary>
-		/// Specify the startup type to be used by the host.
-		/// </summary>
-		/// <typeparam name="TStartup">The type containing a constructor
-		/// with <see cref="IConfiguration"/> parameter and also contains a public
-		/// method named ConfigureServices with <see cref="IServiceCollection"/> parameter.</typeparam>
-		/// <param name="hostBuilder">The <see cref="IHostBuilder"/> to initialize with TStartup.</param>
-		/// <returns>The same instance of the <see cref="IHostBuilder"/> for chaining.</returns>
-		public static IHostBuilder UseStartup<TStartup>(
-			this IHostBuilder hostBuilder) where TStartup : class =>
-			UseStartup<TStartup>(hostBuilder, Array.Empty<string>());
+		private const string ConfigureServicesMethodName = "ConfigureServices";
 
 		/// <summary>
 		/// Specify the startup type to be used by the host.
 		/// </summary>
-		/// <typeparam name="TStartup">The type containing a constructor
-		/// with <see cref="IConfiguration"/> parameter and also contains a public
+		/// <typeparam name="TStartup">The type containing an optional constructor with
+		/// an <see cref="IConfiguration"/> parameter. The implementation must contains a public
 		/// method named ConfigureServices with <see cref="IServiceCollection"/> parameter.</typeparam>
 		/// <param name="hostBuilder">The <see cref="IHostBuilder"/> to initialize with TStartup.</param>
 		/// <param name="args">The command line args.</param>
+		/// <exception cref="InvalidOperationException">Thrown when TStartup doesn't implement
+		/// ConfigureServices(IServiceCollection)"/></exception>
 		/// <returns>The same instance of the <see cref="IHostBuilder"/> for chaining.</returns>
 		public static IHostBuilder UseStartup<TStartup>(
-			this IHostBuilder hostBuilder, string[] args) where TStartup : class
+			this IHostBuilder hostBuilder) where TStartup : class
 		{
-			// Build a typical IConfigurationRoot
-			var configuration = new ConfigurationBuilder()
-				.SetBasePath(Directory.GetCurrentDirectory())
-				.AddJsonFile("appsettings.json", optional: true, reloadOnChange: true)
-				.AddEnvironmentVariables()
-				.AddCommandLine(args ?? Array.Empty<string>())
-				.Build();
-
-			// Inject our configuration into the host builder, also adding
-			// environment bound appsettings.json
-			hostBuilder.ConfigureAppConfiguration((ctx, cfg) =>
-			{
-				cfg.AddConfiguration(configuration);
-				cfg.AddJsonFile($"appsettings.{ctx.HostingEnvironment.EnvironmentName}.json",
-					optional: true, reloadOnChange: true);
-			});
-
-			// A sanity check that the target TStartup type has a constructor
-			// of TStartup(IConfiguration)
-			if(typeof(TStartup).GetConstructor(new Type[] { typeof(IConfiguration) }) == null)
-			{
-				throw new InvalidOperationException(
-					$"{nameof(TStartup)} must implement a public constructor " +
-					$"with a parameter of type {nameof(IConfiguration)}");
-			}
-
 			// Find a method that has this signature: ConfigureServices(IServiceCollection)
-			var cfgServicesMethod = typeof(TStartup).GetMethod("ConfigureServices",
+			var cfgServicesMethod = typeof(TStartup).GetMethod(ConfigureServicesMethodName,
 				new Type[] { typeof(IServiceCollection) });
 
 			// A sanity check that the target TStartup type has a method with
-			// signature ConfigureServices(IServiceCollection)
+			// signature `ConfigureServices(IServiceCollection)`
 			if (cfgServicesMethod == null)
 			{
 				throw new InvalidOperationException(
 					$"{nameof(TStartup)} must implement a public method " +
-					$"\"ConfigureServices\"with a parameter of type {nameof(IServiceCollection)}");
+					$"\"{ConfigureServicesMethodName}\"with a parameter of " +
+					$"type {nameof(IServiceCollection)}");
 			}
 
-			// Create a new instance of TStartup
-			var startup = (TStartup)Activator.CreateInstance(typeof(TStartup), configuration);
+			// Check if TStartup has a ctor that takes a IConfiguration parameter
+			var hasConfigCtor = typeof(TStartup).GetConstructor(new Type[] { typeof(IConfiguration) }) != null;
 
-			// Send in our service collection to the ConfigureServices method
+			// This may be kludgy, but I don't know how else to get the configuration built
+			// in time to pass to the TStartup ctor
+			IConfiguration configuration = null;
+			hostBuilder.ConfigureAppConfiguration(x => configuration = x.Build());
+
+			// Send in the service collection to the ConfigureServices method
 			hostBuilder.ConfigureServices(serviceCollection =>
-				cfgServicesMethod.Invoke(startup, new object[] { serviceCollection }));
+			{
+				// create a TStartup instance based on ctor
+				var startUpObj = hasConfigCtor ?
+					(TStartup)Activator.CreateInstance(typeof(TStartup), configuration) :
+					(TStartup)Activator.CreateInstance(typeof(TStartup), null);
+
+				// finally, call the ConfigureServices implemented by the TStartup object
+				cfgServicesMethod.Invoke(startUpObj, new object[] { serviceCollection });
+			});
 
 			// chain the response
 			return hostBuilder;

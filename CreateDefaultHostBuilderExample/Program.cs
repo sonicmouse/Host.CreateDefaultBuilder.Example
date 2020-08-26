@@ -14,6 +14,6 @@ namespace CreateDefaultHostBuilderExample
 
 		public static IHostBuilder CreateHostBuilder(string[] args) =>
 			Host.CreateDefaultBuilder(args)
-			.UseStartup<Startup>(args);
+			.UseStartup<Startup>();
 	}
 }
