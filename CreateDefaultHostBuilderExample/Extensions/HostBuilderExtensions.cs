@@ -19,8 +19,6 @@ namespace CreateDefaultHostBuilderExample.Extensions
 		/// an <see cref="IConfiguration"/> parameter. The implementation should contain a public
 		/// method named ConfigureServices with <see cref="IServiceCollection"/> parameter.</typeparam>
 		/// <param name="hostBuilder">The <see cref="IHostBuilder"/> to initialize with TStartup.</param>
-		/// <exception cref="InvalidOperationException">Thrown when TStartup doesn't implement
-		/// ConfigureServices(IServiceCollection)"/></exception>
 		/// <returns>The same instance of the <see cref="IHostBuilder"/> for chaining.</returns>
 		public static IHostBuilder UseStartup<TStartup>(
 			this IHostBuilder hostBuilder) where TStartup : class
