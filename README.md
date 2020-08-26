@@ -24,7 +24,7 @@ Using the extension methods from Extensions namespace of this project, you can i
 Your `Startup.cs` file must follow this specification:
 
  1. Implement an **optional** public constructor with an `IConfiguration` parameter.
- 2. Implement a **required** public method with this signature: `void ConfigureServices(IServiceCollection)`.
+ 2. **Should** implement a public method with this signature: `void ConfigureServices(IServiceCollection)`.
 
 For example:
 
