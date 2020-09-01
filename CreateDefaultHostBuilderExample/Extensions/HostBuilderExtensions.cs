@@ -31,17 +31,12 @@ namespace CreateDefaultHostBuilderExample.Extensions
 			var hasConfigCtor = typeof(TStartup).GetConstructor(
 				new Type[]{ typeof(IConfiguration) }) != null;
 
-			// I don't know how else to get the configuration built in time to pass
-			// to the TStartup ctor. This seems to do it perfectly, though
-			IConfiguration configuration = null;
-			hostBuilder.ConfigureAppConfiguration(x => configuration = x.Build());
-
 			// Send in the service collection to the ConfigureServices method
-			hostBuilder.ConfigureServices(serviceCollection =>
+			hostBuilder.ConfigureServices((ctx, serviceCollection) =>
 			{
 				// create a TStartup instance based on ctor
 				var startUpObj = hasConfigCtor ?
-					(TStartup)Activator.CreateInstance(typeof(TStartup), configuration) :
+					(TStartup)Activator.CreateInstance(typeof(TStartup), ctx.Configuration) :
 					(TStartup)Activator.CreateInstance(typeof(TStartup), null);
 
 				// finally, call the ConfigureServices implemented by the TStartup object
