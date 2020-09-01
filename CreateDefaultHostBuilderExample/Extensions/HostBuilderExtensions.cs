@@ -23,17 +23,17 @@ namespace CreateDefaultHostBuilderExample.Extensions
 		public static IHostBuilder UseStartup<TStartup>(
 			this IHostBuilder hostBuilder) where TStartup : class
 		{
-			// Find a method that has this signature: ConfigureServices(IServiceCollection)
-			var cfgServicesMethod = typeof(TStartup).GetMethod(ConfigureServicesMethodName,
-				new Type[] { typeof(IServiceCollection) });
-
-			// Check if TStartup has a ctor that takes a IConfiguration parameter
-			var hasConfigCtor = typeof(TStartup).GetConstructor(
-				new Type[]{ typeof(IConfiguration) }) != null;
-
-			// Send in the service collection to the ConfigureServices method
+			// Invoke the ConfigureServices method on IHostBuilder...
 			hostBuilder.ConfigureServices((ctx, serviceCollection) =>
 			{
+				// Find a method that has this signature: ConfigureServices(IServiceCollection)
+				var cfgServicesMethod = typeof(TStartup).GetMethod(
+					ConfigureServicesMethodName, new Type[] { typeof(IServiceCollection) });
+
+				// Check if TStartup has a ctor that takes a IConfiguration parameter
+				var hasConfigCtor = typeof(TStartup).GetConstructor(
+					new Type[] { typeof(IConfiguration) }) != null;
+
 				// create a TStartup instance based on ctor
 				var startUpObj = hasConfigCtor ?
 					(TStartup)Activator.CreateInstance(typeof(TStartup), ctx.Configuration) :
